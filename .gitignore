@@ -1,0 +1,5 @@
+.vscode/
+first-round/
+venv/
+*.png
+*.pyc
