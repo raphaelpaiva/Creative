@@ -99,16 +99,18 @@ class Cos(Function):
   def __init__(self, arg):
     super(Cos, self).__init__(math.cos, arg)
 
-def random_expr(vars):
+def random_expr(vars, prob=0.99):
   ops = [
     Multiply,
     Div,
     Sin,
     Cos,
-    Const
   ]
 
-  op = random.choice(ops + vars)
+  if random.random() > prob:
+    ops = ops + vars + [Const]
+
+  op = random.choice(ops)
 
   if isinstance(op, Var):
     return op
@@ -118,12 +120,12 @@ def random_expr(vars):
 
   if issubclass(op, Function):
     pi_factor = random.random() * 2 * math.pi
-    arg = Multiply(pi_factor, random_expr(vars))
+    arg = Multiply(pi_factor, random_expr(vars, prob * prob))
 
     return op(arg)
   
   if issubclass (op, Expression):
-    return op(random_expr(vars), random_expr(vars))
+    return op(random_expr(vars, prob * prob), random_expr(vars, prob * prob))
 
 
 if __name__ == "__main__":
@@ -133,7 +135,9 @@ if __name__ == "__main__":
   var_y = Var('y', 1.45253)
   vars = [var_x, var_y]
 
-  func = random_expr(vars)
-  result = func.eval()
-
-  print(f"{func} = {result}")
+  for i in range(1000000):
+    func = Multiply(Sin(random_expr(vars)), Cos(random_expr(vars)))
+    result = func.eval()
+    if result > 1.0 or result < -1.0:
+      print(f"{func} = {result}")
+      break
